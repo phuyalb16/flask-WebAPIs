@@ -1,17 +1,36 @@
-from flask import Flask, jsonify
-from quotes import funny_quotes
-import random
+from flask import Flask
 
+from routes import init_api_routes
+from routes import init_website_routes
+
+
+# create the Flask application
 app = Flask(__name__)
 
+init_api_routes(app)
+init_website_routes(app)
 
-@app.route("/api/funny")
-def serve_funny_qoute():
-	quotes = funny_quotes()
-	nr_of_quotes = len(quotes)
-	selected_quote = quotes[random.randint(0, nr_of_quotes - 1)]
-	return jsonify(selected_quote)
+
+#
+# Template filters
+#
+@app.template_filter('senior_candidate')
+def senior_candidate(candidates):
+    result = []
+    for candidate in candidates:
+        for experience in candidate['experience']:
+            if experience['years'] >= 5:
+                result.append({
+                    'first_name':candidate['first_name'],
+                    'last_name':candidate['last_name'],
+                    'years':experience['years'],
+                    'domain':experience['domain']
+                })
+                break
+
+    return result
+
 
 
 if __name__ == "__main__":
-	app.run(debug=True)
+    app.run(debug=True)
