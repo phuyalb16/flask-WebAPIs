@@ -2,7 +2,9 @@ from flask import jsonify
 from flask import render_template
 from flask import flash
 from flask import current_app
+from flask import make_response
 from flask import abort
+from flask import request
 
 from middleware import candidate_by_id
 from middleware import candidate
@@ -12,11 +14,14 @@ from middleware import random_candidates
 from middleware import delete_candidate
 from middleware import random_projects
 from middleware import add_project
+from middleware import is_user_valid
 from middleware import initialize_database as init_db
 from middleware import fill_database as fill_db
 from middleware import build_message
 
 from decorators import authenticate
+
+TOKEN_HEADER_NAME = "MY_AUTH_TOKEN"
 
 def init_api_routes(app):
     if app:
@@ -29,20 +34,22 @@ def init_api_routes(app):
         app.add_url_rule('/api/candidates/random/<int:nr_of_items>', 'get_random_candidates', random_candidates,
                          methods=['GET'])
         app.add_url_rule('/api/candidates/<string:id>', 'delete_candidate', delete_candidate, methods=['DELETE'])
-        app.add_url_rule('/api/project/random/<int:nr_of_items>', 'get_random_projects', random_projects,
+        app.add_url_rule('/api/projects/random/<int:nr_of_items>', 'get_random_projects', random_projects,
                          methods=['GET'])
         app.add_url_rule('/api/projects', 'add_project', add_project, methods=['POST'])
         app.add_url_rule('/api/initdb', 'initdb', initialize_database)
         app.add_url_rule('/api/filldb', 'filldb', fill_database)
         app.add_url_rule('/api', 'list_routes', list_routes, methods=['GET'], defaults={'app': app})
 
-@authenticate
-def page_about():
+@authenticate(is_user_valid_func=is_user_valid)
+def page_about(*args, **kwargs):
     if current_app:
         flash('The application was loaded', 'info')
         flash('The secret key is {0}'.format(current_app.config['SECRET_KEY']), 'info')
 
-    return render_template('about.html', selected_menu_item="about")
+    resp = make_response(render_template('about.html', selected_menu_item="about"))
+    resp.headers[TOKEN_HEADER_NAME] = kwargs[TOKEN_HEADER_NAME]
+    return resp
 
 
 def page_project():
@@ -54,6 +61,8 @@ def page_experience():
 
 
 def page_candidate():
+    my_cookie = request.cookies.get('myCookie')
+    print('COOKIE FROM THE CLIENT:' + my_cookie)
     current_candidates = candidate(serialize=False)
     return render_template('candidate.html', selected_menu_item="candidate", candidates=current_candidates)
 
@@ -63,7 +72,9 @@ def page_add_candidate():
 
 
 def page_index():
-    return render_template('index.html', selected_menu_item="index")
+    resp = make_response(render_template('index.html', selected_menu_item="index"))
+    resp.set_cookie('myCookie','this is a custom cookie sent from the server')
+    return resp
 
 
 def crash_server():

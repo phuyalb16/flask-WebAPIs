@@ -7,6 +7,8 @@ from flask import make_response
 from flask import request
 from flask import url_for
 
+from decorators import check_token
+
 from math import ceil
 
 from data_provider_service import DataProviderService
@@ -43,7 +45,7 @@ def candidate(serialize = True):
     else:
         return candidates
 
-
+@check_token
 def candidate_by_id(id):
     current_candidate = DATA_PROVIDER.get_candidate(id, serialize=True)
     if current_candidate:
@@ -134,6 +136,9 @@ def add_candidate():
         "url": url_for("candidate_by_id", id=new_candidate_id)
     })
 
+
+def is_user_valid(username, password):
+    return  DATA_PROVIDER.is_user_valid(username, password)
 
 def build_message(key, message):
     return {key:message}
