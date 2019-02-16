@@ -34,7 +34,7 @@ class Candidate(Model):
             "http://schema.org/nr_of_interviews": len(self.interviews)
         }, self.get_context())
 
-        print(compacted_json)
+        #print(compacted_json)
 
         return compacted_json
 

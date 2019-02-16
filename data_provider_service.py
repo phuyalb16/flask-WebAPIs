@@ -116,37 +116,16 @@ class DataProviderService:
 
         return False
 
-
-
-
-
-
-
-
-
-
-
     def is_user_valid(self, username, password):
-        tmp_hashed_password = self.get_salted_password(password)
-        user = self.session.query(User).filter(User.user_name == username).filter(User.password == tmp_hashed_password)
+        tmp_hashed_password = self.get_hashed_password(password)
+        user = self.session.query(User.User).filter(User.User.user_name == username).filter(User.User.password == tmp_hashed_password)
         return user is not None
 
 
-    def get_salted_password(self, password):
+    def get_hashed_password(self, password):
         temp_extension = "This !s an extension string for password"
         hashed_pass = hashlib.sha256(password + temp_extension).hexdigest()
         return hashed_pass
-
-
-
-
-
-
-
-
-
-
-
 
 
     def fill_database(self):
@@ -156,11 +135,11 @@ class DataProviderService:
         user1 = User(first_name="Kevin",
                      last_name = "North",
                      user_name = "keno",
-                     password= self.get_salted_password("butter"))
+                     password= self.get_hashed_password("butter"))
         user2 = User(first_name="Mark",
                      last_name = "Ettori",
                      user_name = "maet",
-                     password= self.get_salted_password("peanut"))
+                     password= self.get_hashed_password("peanut"))
 
         self.session.add(user1)
         self.session.add(user2)
@@ -321,3 +300,4 @@ class DataProviderService:
         # self.session.add(int3)
         #
         # self.session.commit()
+

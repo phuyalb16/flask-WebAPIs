@@ -13,3 +13,4 @@ class Review(Model):
     # Reference for the user
     #
     candidate = Column(Integer, ForeignKey('candidates.id'))
+
